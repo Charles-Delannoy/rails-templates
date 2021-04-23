@@ -1,6 +1,8 @@
 # Rails Templates
 
-Quickly generate a rails app with a default configuration, inpired by Le Wagon Templates
+Quickly generate a rails app with a default configuration,
+👉 Inpired by Le Wagon Templates,
+👉 Customized by Charles-Delannoy,
 using [Rails Templates](http://guides.rubyonrails.org/rails_application_templates.html).
 
 
