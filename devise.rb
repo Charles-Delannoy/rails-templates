@@ -129,7 +129,6 @@ HTML
 inject_into_file 'app/views/layouts/application.html.erb', after: '<body>' do
   <<-HTML
 
-    <%= render 'shared/navbar' %>
     <%= render 'shared/flashes' %>
   HTML
 end
