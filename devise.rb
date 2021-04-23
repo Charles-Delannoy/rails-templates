@@ -145,7 +145,7 @@ inject_into_file 'app/views/layouts/application.html.erb', after: '<body>' do
   <<-HTML
 
     <%= render 'shared/flashes' %>
-    <%= render 'shared/login_access' %
+    <%= render 'shared/login_access' %>
   HTML
 end
 
