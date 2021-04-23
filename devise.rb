@@ -128,12 +128,24 @@ file 'app/views/shared/_flashes.html.erb', <<~HTML
   <% end %>
 HTML
 
+# Login Access
+########################################
+file 'app/views/shared/_login_access.html.erb', <<~HTML
+  <% if current_user %>
+    <%= link_to 'Deconnexion', destroy_user_session_path, method: :delete %>
+  <% else %>
+    <%= link_to 'Connexion', new_user_session_path %>
+    <%= link_to 'Inscription', new_user_registration_path %>
+  <% end %>
+HTML
+
 # run 'curl -L https://github.com/lewagon/awesome-navbars/raw/master/templates/_navbar_wagon.html.erb > app/views/shared/_navbar.html.erb'
 
 inject_into_file 'app/views/layouts/application.html.erb', after: '<body>' do
   <<-HTML
 
     <%= render 'shared/flashes' %>
+    <%= render 'shared/login_access' %
   HTML
 end
 
