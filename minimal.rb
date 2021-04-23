@@ -99,9 +99,6 @@ style = <<~HTML
 HTML
 gsub_file('app/views/layouts/application.html.erb', "<%= stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track': 'reload' %>", style)
 
-# README
-########################################
-file 'README.md', markdown_file_content, force: true
 
 # Generators
 ########################################
