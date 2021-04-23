@@ -9,24 +9,76 @@ inject_into_file 'Gemfile', before: 'group :development, :test do' do
     gem 'autoprefixer-rails'
     gem 'font-awesome-sass'
     gem 'simple_form'
+
   RUBY
 end
 
 inject_into_file 'Gemfile', after: 'group :development, :test do' do
   <<-RUBY
+
   gem 'pry-byebug'
   gem 'pry-rails'
   gem 'dotenv-rails'
+  # Test with Rspec
+  gem 'rspec-rails', '~> 4.0'
+  # add method to rspec
+  gem 'rails-controller-testing'
+  # Guard automatically launch test on modifications
+  gem 'guard-rspec', require: false
+  # Replacement of fixtures for Rspec
+  gem 'factory_bot_rails'
   RUBY
 end
 
 gsub_file('Gemfile', /# gem 'redis'/, "gem 'redis'")
 
+# IRB conf file
+########################################
+irbrc = '
+if defined?(Rails)
+  banner = ''
+
+  if Rails.env.production?
+    banner = "\e[41;97;1m prod \e[0m "
+  elsif Rails.env.staging?
+    banner = "\e[43;97;1m staging \e[0m "
+  end
+
+
+  IRB.conf[:PROMPT][:CUSTOM] = IRB.conf[:PROMPT][:DEFAULT].merge(
+    PROMPT_I: "#{banner}#{IRB.conf[:PROMPT][:DEFAULT][:PROMPT_I]}"
+  )
+
+  IRB.conf[:PROMPT_MODE] = :CUSTOM
+end
+'
+file '.irbrc', irbrc.strip
+
+# Clevercloud conf file
+########################################
+file 'clevercloud/ruby.json', <<~EOF
+  {
+    "deploy": {
+      "rakegoals": ["assets:precompile", "db:migrate"]
+    }
+  }
+EOF
+
+# Database conf file
+########################################
+db_production_conf = <<~EOF
+  production:
+    <<: *default
+    url: <%= ENV['POSTGRESQL_ADDON_URI'] %>
+EOF
+
+gsub_file('config/database.yml', /^production:.*\z/m, db_production_conf)
+
 # Assets
 ########################################
 run 'rm -rf app/assets/stylesheets'
 run 'rm -rf vendor'
-run 'curl -L https://github.com/lewagon/stylesheets/archive/master.zip > stylesheets.zip'
+run 'curl -L https://github.com/Charles-Delannoy/rails-stylesheets-master/archive/master.zip > stylesheets.zip'
 run 'unzip stylesheets.zip -d app/assets && rm stylesheets.zip && mv app/assets/rails-stylesheets-master app/assets/stylesheets'
 
 # Dev environment
@@ -84,9 +136,6 @@ end
 
 # README
 ########################################
-markdown_file_content = <<-MARKDOWN
-Rails app generated with [lewagon/rails-templates](https://github.com/lewagon/rails-templates), created by the [Le Wagon coding bootcamp](https://www.lewagon.com) team.
-MARKDOWN
 file 'README.md', markdown_file_content, force: true
 
 # Generators
@@ -95,8 +144,9 @@ generators = <<~RUBY
   config.generators do |generate|
     generate.assets false
     generate.helper false
-    generate.test_framework :test_unit, fixture: false
+    generate.test_framework :rspec, fixture: false
   end
+
 RUBY
 
 environment generators
@@ -108,7 +158,7 @@ after_bundle do
   # Generators: db + simple form + pages controller
   ########################################
   rails_command 'db:drop db:create db:migrate'
-  generate('simple_form:install', '--bootstrap')
+  generate('simple_form:install')
   generate(:controller, 'pages', 'home', '--skip-routes', '--no-test-framework')
 
   # Routes
@@ -118,8 +168,10 @@ after_bundle do
   # Git ignore
   ########################################
   append_file '.gitignore', <<~TXT
+
     # Ignore .env file containing credentials.
     .env*
+
     # Ignore Mac and Linux file system files
     *.swp
     .DS_Store
@@ -163,7 +215,7 @@ after_bundle do
 
   # Webpacker / Yarn
   ########################################
-  run 'yarn add popper.js jquery bootstrap'
+  # run 'yarn add popper.js jquery bootstrap'
   append_file 'app/javascript/packs/application.js', <<~JS
 
 
@@ -173,7 +225,7 @@ after_bundle do
     // ----------------------------------------------------
 
     // External imports
-    import "bootstrap";
+    // import "bootstrap";
 
     // Internal imports, e.g:
     // import { initSelect2 } from '../components/init_select2';
@@ -190,13 +242,13 @@ after_bundle do
       // Preventing Babel from transpiling NodeModules packages
       environment.loaders.delete('nodeModules');
       // Bootstrap 4 has a dependency over jQuery & Popper.js:
-      environment.plugins.prepend('Provide',
-        new webpack.ProvidePlugin({
-          $: 'jquery',
-          jQuery: 'jquery',
-          Popper: ['popper.js', 'default']
-        })
-      );
+      // environment.plugins.prepend('Provide',
+      //  new webpack.ProvidePlugin({
+      //    $: 'jquery',
+      //    jQuery: 'jquery',
+      //    Popper: ['popper.js', 'default']
+      //  })
+      //);
     JS
   end
 
@@ -206,13 +258,10 @@ after_bundle do
 
   # Rubocop
   ########################################
-  run 'curl -L https://raw.githubusercontent.com/lewagon/rails-templates/master/.rubocop.yml > .rubocop.yml'
+  run 'curl -L https://raw.githubusercontent.com/Charles-Delannoy/rails-templates/master/.rubocop.yml > .rubocop.yml'
 
   # Git
   ########################################
   git add: '.'
-  git commit: "-m 'Initial commit with devise template from https://github.com/lewagon/rails-templates'"
-
-  # Fix puma config
-  gsub_file('config/puma.rb', 'pidfile ENV.fetch("PIDFILE") { "tmp/pids/server.pid" }', '# pidfile ENV.fetch("PIDFILE") { "tmp/pids/server.pid" }')
+  git commit: "-m 'Initial commit with devise template from https://github.com/Charles-Delannoy/rails-templates'"
 end
