@@ -107,19 +107,23 @@ gsub_file('app/views/layouts/application.html.erb', "<%= stylesheet_link_tag 'ap
 ########################################
 file 'app/views/shared/_flashes.html.erb', <<~HTML
   <% if notice %>
-    <div class="alert alert-info alert-dismissible fade show m-1" role="alert">
-      <%= notice %>
-      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>
+    <div data-controller="flashes">
+      <div class="flash flash-notice" data-flashes-target='flash'>
+        <%= notice %>
+        <button type="button" data-action="click->flashes#dismiss">
+          X
+        </button>
+      </div>
     </div>
   <% end %>
   <% if alert %>
-    <div class="alert alert-warning alert-dismissible fade show m-1" role="alert">
-      <%= alert %>
-      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>
+    <div data-controller="flashes">
+      <div class="flash flash-alert" data-flashes-target='flash'>
+        <%= alert %>
+        <button type="button" data-action="click->flashes#dismiss">
+          X
+        </button>
+      </div>
     </div>
   <% end %>
 HTML
@@ -176,6 +180,26 @@ after_bundle do
   ########################################
   generate('devise:install')
   generate('devise', 'User')
+
+  # Stimulus install + flash controller
+  ########################################
+  generate('webpacker:install:stimulus')
+  # Add flashes controller
+  run 'touch app/javascript/controllers/flashes_controller.js'
+  # Remove default controller
+  run 'rm app/javascript/controllers/hello_controller.js'
+
+  append_file 'app/javascript/controllers/flashes_controller.js', <<~JS
+    import { Controller } from "stimulus";
+
+    export default class extends Controller {
+      static targets = [ 'flash' ];
+
+      dismiss = () =>{
+        this.flashTarget.style.display = 'none';
+      }
+    }
+  JS
 
   # App controller
   ########################################
