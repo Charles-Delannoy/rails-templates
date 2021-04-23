@@ -17,6 +17,14 @@ inject_into_file 'Gemfile', after: 'group :development, :test do' do
   gem 'pry-byebug'
   gem 'pry-rails'
   gem 'dotenv-rails'
+  # Test with Rspec
+  gem 'rspec-rails', '~> 4.0'
+  # add method to rspec
+  gem 'rails-controller-testing'
+  # Guard automatically launch test on modifications
+  gem 'guard-rspec', require: false
+  # Replacement of fixtures for Rspec
+  gem 'factory_bot_rails'
   RUBY
 end
 
@@ -66,7 +74,7 @@ gsub_file('config/database.yml', /^production:.*\z/m, db_production_conf)
 ########################################
 run 'rm -rf app/assets/stylesheets'
 run 'rm -rf vendor'
-run 'curl -L https://github.com/lewagon/stylesheets/archive/master.zip > stylesheets.zip'
+run 'curl -L https://github.com/Charles-Delannoy/rails-stylesheets-master/archive/master.zip > stylesheets.zip'
 run 'unzip stylesheets.zip -d app/assets && rm stylesheets.zip && mv app/assets/rails-stylesheets-master app/assets/stylesheets'
 
 # Dev environment
@@ -93,9 +101,6 @@ gsub_file('app/views/layouts/application.html.erb', "<%= stylesheet_link_tag 'ap
 
 # README
 ########################################
-markdown_file_content = <<~MARKDOWN
-  Rails app generated with [lewagon/rails-templates](https://github.com/lewagon/rails-templates), created by the [Le Wagon coding bootcamp](https://www.lewagon.com) team.
-MARKDOWN
 file 'README.md', markdown_file_content, force: true
 
 # Generators
@@ -104,7 +109,7 @@ generators = <<~RUBY
   config.generators do |generate|
     generate.assets false
     generate.helper false
-    generate.test_framework :test_unit, fixture: false
+    generate.test_framework :rspec, fixture: false
   end
 
 RUBY
@@ -118,7 +123,7 @@ after_bundle do
   # Generators: db + simple form + pages controller
   ########################################
   rails_command 'db:drop db:create db:migrate'
-  generate('simple_form:install', '--bootstrap')
+  generate('simple_form:install')
   generate(:controller, 'pages', 'home', '--skip-routes', '--no-test-framework')
 
   # Routes
@@ -139,17 +144,17 @@ after_bundle do
 
   # Webpacker / Yarn
   ########################################
-  run 'yarn add popper.js jquery bootstrap'
+  # run 'yarn add popper.js jquery bootstrap'
   append_file 'app/javascript/packs/application.js', <<~JS
 
 
     // ----------------------------------------------------
-    // Note(lewagon): ABOVE IS RAILS DEFAULT CONFIGURATION
+    // ABOVE IS RAILS DEFAULT CONFIGURATION
     // WRITE YOUR OWN JS STARTING FROM HERE 👇
     // ----------------------------------------------------
 
     // External imports
-    import "bootstrap";
+    // import "bootstrap";
 
     // Internal imports, e.g:
     // import { initSelect2 } from '../components/init_select2';
@@ -168,13 +173,13 @@ after_bundle do
       environment.loaders.delete('nodeModules');
 
       // Bootstrap 4 has a dependency over jQuery & Popper.js:
-      environment.plugins.prepend('Provide',
-        new webpack.ProvidePlugin({
-          $: 'jquery',
-          jQuery: 'jquery',
-          Popper: ['popper.js', 'default']
-        })
-      );
+      // environment.plugins.prepend('Provide',
+      //  new webpack.ProvidePlugin({
+      //    $: 'jquery',
+      //    jQuery: 'jquery',
+      //    Popper: ['popper.js', 'default']
+      //  })
+      //);
 
     JS
   end
@@ -185,10 +190,10 @@ after_bundle do
 
   # Rubocop
   ########################################
-  run 'curl -L https://raw.githubusercontent.com/lewagon/rails-templates/master/.rubocop.yml > .rubocop.yml'
+  run 'curl -L https://raw.githubusercontent.com/Charles-Delannoy/rails-templates/master/.rubocop.yml > .rubocop.yml'
 
   # Git
   ########################################
   git add: '.'
-  git commit: "-m 'Initial commit with minimal template from https://github.com/lewagon/rails-templates'"
+  git commit: "-m 'Initial commit with minimal template from https://github.com/Charles-Delannoy/rails-templates'"
 end
