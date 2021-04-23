@@ -183,7 +183,7 @@ after_bundle do
 
   # Stimulus install + flash controller
   ########################################
-  generate('webpacker:install:stimulus')
+  run 'rails webpacker:install:stimulus'
   # Add flashes controller
   run 'touch app/javascript/controllers/flashes_controller.js'
   # Remove default controller
