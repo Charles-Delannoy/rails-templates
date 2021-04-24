@@ -291,6 +291,11 @@ after_bundle do
   ########################################
   run 'curl -L https://raw.githubusercontent.com/Charles-Delannoy/rails-templates/master/.rubocop.yml > .rubocop.yml'
 
+  # Rspec configuration
+  ########################################
+  run 'curl -L https://github.com/Charles-Delannoy/rspec-config-template/archive/master.zip > configuration.zip'
+  run 'unzip configuration.zip -d rspec && rm configuration.zip && cp -r spec/configuration/devise/. spec/'
+
   # Git
   ########################################
   git add: '.'
