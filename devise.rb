@@ -294,7 +294,7 @@ after_bundle do
   # Rspec configuration
   ########################################
   run 'curl -L https://github.com/Charles-Delannoy/rspec-config-template/archive/master.zip > configuration.zip'
-  run 'unzip configuration.zip -d spec && rm configuration.zip && cp -r spec/rspec-config-template-master/devise/. spec/'
+  run 'unzip configuration.zip -d spec && rm configuration.zip && cp -r spec/rspec-config-template-master/devise/. spec/ && rm -r spec/rspec-config-template-master'
 
   # Git
   ########################################
